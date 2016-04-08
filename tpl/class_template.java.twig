@@ -1,0 +1,68 @@
+package {{ javaPackage }};
+
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.{{ mapredClassName }};
+
+import java.io.IOException;
+
+public class {{ javaClassName }}
+        extends {{ mapredClassName }}<{{ keyIn|hadoop_type }}, {{ valueIn|hadoop_type }}, {{ keyOut|hadoop_type }}, {{ valueOut|hadoop_type }}> {
+
+    private class Context extends {{ gobindCtxClass }}.Stub {
+        private {{ mapredClassName }}<{{ keyIn|hadoop_type }}, {{ valueIn|hadoop_type }}, {{ keyOut|hadoop_type }}, {{ valueOut|hadoop_type }}>.Context ctx;
+
+        private Context({{ mapredClassName }}<{{ keyIn|hadoop_type }}, {{ valueIn|hadoop_type }}, {{ keyOut|hadoop_type }}, {{ valueOut|hadoop_type }}>.Context ctx) {
+            this.ctx = ctx;
+        }
+
+        public void Write({{ keyOut|java_type }} k, {{ valueOut|java_type }} v) {
+            try {
+                ctx.write(new {{ keyOut|hadoop_type }}(k), new {{ valueOut|hadoop_type }}(v));
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        }
+
+        {% if target.IsReducer() %}
+        private java.util.Iterator<{{ valueIn|hadoop_type }}> iter;
+
+        public void SetIter(java.lang.Iterable<{{ valueIn|hadoop_type }}> iter) {
+            this.iter = iter.iterator();
+        }
+
+        public boolean HasNext() {
+            return this.iter.hasNext();
+        }
+
+        public {{ valueIn|java_type }} Next() {
+            return this.iter.next().get();
+        }
+        {% endif %}
+    }
+
+    private {{ gobindClass }} impl;
+    private Context ctx;
+
+    public {{ javaClassName }}() {
+        super();
+        impl = {{ gobindConstructor }}();
+    }
+
+    @Override
+    protected void setup({{ mapredClassName }}<{{ keyIn|hadoop_type }}, {{ valueIn|hadoop_type }}, {{ keyOut|hadoop_type }}, {{ valueOut|hadoop_type }}>.Context context) throws IOException, InterruptedException {
+        ctx = new Context(context);
+    }
+
+    @Override
+    public void {{ mapredMethodName }}({{ keyIn|hadoop_type }} key, {% if target.IsReducer() %}Iterable<{{ valueIn|valuein_type }}>{% else %}{{ valueIn|valuein_type }}{% endif %} value, {{ mapredClassName }}<{{ keyIn|hadoop_type }}, {{ valueIn|hadoop_type }}, {{ keyOut|hadoop_type }}, {{ valueOut|hadoop_type }}>.Context context)
+            throws IOException, InterruptedException {
+        {{ keyIn|transform('key', 'k') }}
+        {% if target.IsReducer() %}
+        ctx.SetIter(value);
+        impl.{{ gobindMethodName }}(k, ctx);
+        {% else %}
+        {{ valueIn|transform('value', 'v') }}
+        impl.{{ gobindMethodName }}(k, v, ctx);
+        {% endif %}
+    }
+}
