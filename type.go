@@ -2,15 +2,31 @@ package mrnative
 
 import "strings"
 
+var validTypes = []string{
+	"int",
+	"int16",
+	"int32",
+	"string",
+	"float32",
+	"float64",
+}
+
 var typeMapHadoop = map[string]string{
-	"int":    "LongWritable",
-	"long":   "LongWritable",
-	"string": "Text",
+	"int":     "LongWritable",
+	"int16":   "ShortWritable",
+	"int32":   "IntWritable",
+	"string":  "Text",
+	"float32": "FloatWritable",
+	"float64": "DoubleWritable",
 }
 
 var typeMapJava = map[string]string{
-	"int":    "long",
-	"string": "String",
+	"int":     "long",
+	"int16":   "short",
+	"int32":   "int",
+	"string":  "String",
+	"float32": "float",
+	"float64": "double",
 }
 
 // GoToJavaType converts the given go type into its

@@ -1,0 +1,63 @@
+package {{ name }}
+
+//go:generate go-mrnative build
+
+// Context provides basic interaction with MapReduce counters and status.
+type Context interface {
+    // Counter returns a Counter with the given group and name.
+    Counter(group, name string) Counter
+    // Status returns the current status.
+    Status() string
+    // SetStatus sets the current status.
+    SetStatus(status string)
+}
+
+// Counter represents a MapReduce counter.
+type Counter interface {
+    // Value returns the current value stored in the Counter.
+    Value() int
+    // SetValue sets the value in the Counter.
+    SetValue(val int)
+    // Increment increments the value in Counter by val.
+    Increment(val int)
+}
+{% for type in types %}
+// {{ type.type_name }}Context represents a context specific to {{ type.type_name }}.
+type {{ type.type_name }}Context interface {
+    Context{% if type != "mapper" %}
+    // HasNext returns true if another value is available.
+    HasNext() bool
+    // Next returns the next value.
+    Next() {{ type.valueIn }}{% endif %}
+    // Write writes one line to the context.
+    Write(key {{ type.keyOut }}, val {{ type.valueOut }})
+}
+
+// {{ type.type_name }} is a {{ type.type }}.
+// @{{ (type.type == "combiner") ? "reducer" : type.type }}
+type {{ type.type_name }} struct {}
+
+// New{{ type.type_name }} creates a new {{ type.type_name }}, ready for use.
+func New{{ type.type_name }}() *{{ type.type_name }} {
+    return &{{ type.type_name }}{}
+}
+
+{% if type.type == "mapper" %}// Map takes one key/value pair and a {{ type.type_name }}Context.
+//
+// A mapper function may write zero or more key/value pairs to the output
+// using the provided context.
+func (o *{{ type.type_name }}) Map(key {{ type.keyIn }}, val {{ type.valueIn }}, ctx {{ type.type_name }}Context) {
+    // TODO: Implementation.
+    ctx.Write(key, val)
+}
+{% else %}// Reduce takes one key and all values associated with that key.
+//
+// A reducer function may receive multiple values via the provided {{ type.type_name }}.
+func (o *{{ type.type_name }}) Reduce(key {{ type.keyIn }}, ctx {{ type.type_name }}Context) {
+    // TODO: Implementation.
+    for ctx.HasNext() {
+        v := ctx.Next()
+        ctx.Write(key, v)
+    }
+}
+{% endif %}{% endfor %}

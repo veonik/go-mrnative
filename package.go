@@ -51,7 +51,17 @@ func NewInterface(spec *ast.TypeSpec) *Interface {
 	var m []*Method
 	methods := typ.Methods.List
 	for i := 0; i < len(methods); i++ {
-		m = append(m, NewInterfaceMethod(name, methods[i]))
+		switch methods[i].Type.(type) {
+		case *ast.FuncType:
+			m = append(m, NewInterfaceMethod(name, methods[i]))
+
+		case *ast.Ident:
+		// Handle embedded interface
+
+		default:
+			// ...?
+		}
+
 	}
 	return &Interface{name, m}
 }
@@ -64,18 +74,21 @@ type Method struct {
 func NewInterfaceMethod(recv string, f *ast.Field) *Method {
 	var p []*Param
 	var r []*Param
-	if par := f.Type.(*ast.FuncType).Params; par != nil {
-		params := par.List
-		for i := 0; i < len(params); i++ {
-			p = append(p, NewParam(params[i]))
+	if typ, ok := f.Type.(*ast.FuncType); ok {
+		if par := typ.Params; par != nil {
+			params := par.List
+			for i := 0; i < len(params); i++ {
+				p = append(p, NewParam(params[i]))
+			}
+		}
+		if ret := typ.Results; ret != nil {
+			returns := ret.List
+			for i := 0; i < len(returns); i++ {
+				r = append(r, NewParam(returns[i]))
+			}
 		}
 	}
-	if ret := f.Type.(*ast.FuncType).Results; ret != nil {
-		returns := ret.List
-		for i := 0; i < len(returns); i++ {
-			r = append(r, NewParam(returns[i]))
-		}
-	}
+
 	return &Method{&Func{f.Names[0].Name, p, r}, recv}
 }
 

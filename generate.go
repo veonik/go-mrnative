@@ -28,11 +28,7 @@ func NewGenerator(packages []string) *Generator {
 }
 
 func newEnv() *stick.Env {
-	d, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("rendering: %s", err.Error())
-	}
-	env := stick.NewEnv(stick.NewFilesystemLoader(d))
+	env := stick.NewEnv(newTemplateLoader())
 	env.Filters["hadoop_type"] = func(e *stick.Env, val stick.Value, args ...stick.Value) stick.Value {
 		return GoToHadoopType(stick.CoerceString(val))
 	}
@@ -130,7 +126,12 @@ func tplParams(t *Target) map[string]stick.Value {
 
 func (g *Generator) genJava(target *Target) {
 	params := tplParams(target)
-	f, err := os.Create(filepath.Join(target.pkg.dir, params["javaClassName"].(string)+".java"))
+	dir, _ := os.Readlink(target.pkg.dir)
+	dir = filepath.Join(dir, "build/java/go")
+	if err := os.MkdirAll(dir, os.ModeDir|os.ModePerm); err != nil {
+		log.Fatalf("rendering: %s", err.Error())
+	}
+	f, err := os.Create(filepath.Join(dir, params["javaClassName"].(string)+".java"))
 	if err != nil {
 		log.Fatalf("rendering: %s", err.Error())
 	}

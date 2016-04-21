@@ -8,6 +8,26 @@ import java.io.IOException;
 public class {{ javaClassName }}
         extends {{ mapredClassName }}<{{ keyIn|hadoop_type }}, {{ valueIn|hadoop_type }}, {{ keyOut|hadoop_type }}, {{ valueOut|hadoop_type }}> {
 
+    private class Counter extends {{ gobindClassRoot }}.Counter.Stub {
+        private org.apache.hadoop.mapreduce.Counter ctr;
+
+        private Counter(org.apache.hadoop.mapreduce.Counter ctr) {
+            this.ctr = ctr;
+        }
+
+        public long Value() {
+            return this.ctr.getValue();
+        }
+
+        public void SetValue(long amt) {
+            this.ctr.setValue(amt);
+        }
+
+        public void Increment(long amt) {
+            this.ctr.increment(amt);
+        }
+    }
+
     private class Context extends {{ gobindCtxClass }}.Stub {
         private {{ mapredClassName }}<{{ keyIn|hadoop_type }}, {{ valueIn|hadoop_type }}, {{ keyOut|hadoop_type }}, {{ valueOut|hadoop_type }}>.Context ctx;
 
@@ -21,6 +41,18 @@ public class {{ javaClassName }}
             } catch (Exception e) {
                 System.out.println(e);
             }
+        }
+
+        public {{ gobindClassRoot }}.Counter Counter(String group, String name) {
+            return new Counter(ctx.getCounter(group, name));
+        }
+
+        public String Status() {
+            return ctx.getStatus();
+        }
+
+        public void SetStatus(String status) {
+            ctx.setStatus(status);
         }
 
         {% if target.IsReducer() %}
