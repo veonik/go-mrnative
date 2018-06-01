@@ -31,7 +31,7 @@ Go structs directly available to Hadoop MapReduce.
 The simplest way to install go-mrnative is to use `go get`.
 
 ```bash
-go get -u github.com/tyler-sommer/go-mrnative/...
+go get -u github.com/veonik/go-mrnative/...
 ```
 
 This will install the go-mrnative libraries as well as a command line utility.
@@ -62,7 +62,7 @@ create Mapper, Reducer, and Combiners (though Combiners are really just Reducers
 ### Building a Go mapreduce project
 
 Replace `<pkg>` in the following example with a valid go package name, such as
-`github.com/tyler-sommer/go-mrnative`.
+`github.com/veonik/go-mrnative`.
 
 ```bash
 go-mrnative build <pkg>

@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/tyler-sommer/go-mrnative"
+	"github.com/veonik/go-mrnative"
 )
 
 const ver = "0.1.0"
