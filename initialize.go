@@ -24,7 +24,7 @@ func NewInitializer(dir string) *Initializer {
 }
 
 func newInitializerEnv() *stick.Env {
-	env := stick.NewEnv(newTemplateLoader())
+	env := stick.New(newTemplateLoader())
 	return env
 }
 

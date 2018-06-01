@@ -28,17 +28,17 @@ func NewGenerator(packages []string) *Generator {
 }
 
 func newEnv() *stick.Env {
-	env := stick.NewEnv(newTemplateLoader())
-	env.Filters["hadoop_type"] = func(e *stick.Env, val stick.Value, args ...stick.Value) stick.Value {
+	env := stick.New(newTemplateLoader())
+	env.Filters["hadoop_type"] = func(e stick.Context, val stick.Value, args ...stick.Value) stick.Value {
 		return GoToHadoopType(stick.CoerceString(val))
 	}
-	env.Filters["valuein_type"] = func(e *stick.Env, val stick.Value, args ...stick.Value) stick.Value {
+	env.Filters["valuein_type"] = func(e stick.Context, val stick.Value, args ...stick.Value) stick.Value {
 		return GoToValueInHadoopType(stick.CoerceString(val))
 	}
-	env.Filters["java_type"] = func(e *stick.Env, val stick.Value, args ...stick.Value) stick.Value {
+	env.Filters["java_type"] = func(e stick.Context, val stick.Value, args ...stick.Value) stick.Value {
 		return GoToJavaType(stick.CoerceString(val))
 	}
-	env.Filters["transform"] = func(e *stick.Env, val stick.Value, args ...stick.Value) stick.Value {
+	env.Filters["transform"] = func(e stick.Context, val stick.Value, args ...stick.Value) stick.Value {
 		baseTyp := stick.CoerceString(val)
 		passedVar := stick.CoerceString(args[0])
 		transformedVar := stick.CoerceString(args[1])
